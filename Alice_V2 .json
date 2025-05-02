@@ -1,0 +1,322 @@
+{
+  "name": "Alice V2",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('When chat message received').item.json.chatInput }}",
+        "options": {
+          "systemMessage": "=#Role\nYour name is Alice, You are a customer services from skincare brand BrighGlow Skincare.\n\n#Tasks\nYour task is reponse all customer questions about skincare, you have to answers if the question is related with FAQ and you need to persuade them to buy the product. You can ask them what is their problem and then you solve their problem with our product. If the customer asks something unrelated to skincare or BrightGlow, reply politely and redirect to skincare topic. If you don't know the answer, say: \"Let me check that with the team and get back to you.\"  \nAlways aim to guide the customer toward the right product.\n\n\n#Style\nYour style is fun, profesional & straight to the point. "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        772,
+        0
+      ],
+      "id": "f9a81e2e-1040-4c88-bcd6-f076707249c8",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        740,
+        220
+      ],
+      "id": "e875715c-6664-43e0-bfc0-159719d9be33",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "WLmoKVvLqkDdpVjh",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('When chat message received').item.json.chatInput }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        860,
+        220
+      ],
+      "id": "f680450c-e7d0-42cb-972f-61791d0af338",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        600,
+        -220
+      ],
+      "id": "46f774a7-917e-4054-a575-a726351270af",
+      "name": "When chat message received",
+      "webhookId": "7475e1bd-09d3-436b-8a6a-bd2ff71dd1f0"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "fcef30f0-711c-439e-ab9a-9296c85c167d",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "\"maaf saya tidak tahu\" ",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1060,
+        -220
+      ],
+      "id": "bbb85bfc-adb0-4cda-ad08-120a189d425d",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "message": "= Message:\nA customer asked something Alice couldn't answer:\n\"{{ $('When chat message received').item.json.chatInput }}\"\n\nPlease check the conversation log and respond manually.\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1180,
+        0
+      ],
+      "id": "3ea88f1b-cf3e-4c76-82b0-165733025860",
+      "name": "Gmail",
+      "webhookId": "6f5d7d08-87ee-4e60-ae42-e0cd2dce6530",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "vr9T9kndgyqYlxAm",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "",
+          "cachedResultUrl": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.5,
+      "position": [
+        980,
+        220
+      ],
+      "id": "bb67c5a4-780b-4bd7-958d-6483f43aaa33",
+      "name": "fAQ",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Hkh8geVk1KUWOnwL",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "",
+          "cachedResultUrl": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        600,
+        0
+      ],
+      "id": "3e3046b9-7a2e-4856-a5ab-a23e60f8ecb7",
+      "name": "Log",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Hkh8geVk1KUWOnwL",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "633e83cb-ddc0-4a94-a16d-239fa4e52200",
+              "name": "Timestamp",
+              "value": "={{ $now }}",
+              "type": "string"
+            },
+            {
+              "id": "2f95541c-c530-41be-89e2-164e23113fde",
+              "name": "input",
+              "value": "={{ $json.chatInput }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        760,
+        -220
+      ],
+      "id": "e98307d6-0980-4fbb-85d5-e73c934b7064",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "fAQ": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b37cf28b-63ce-4622-b8a7-05a405db4d54",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a287613f1596da776459594685fbf4e2b4a12124f80ab8c8772f5e37bff103ae"
+  },
+  "id": "HsBlakuNNDM89OME",
+  "tags": []
+}
